@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+	   xmlns:aop="http://www.springframework.org/schema/aop"
+	   xmlns:context="http://www.springframework.org/schema/context"
+	   xmlns:tx="http://www.springframework.org/schema/tx" xmlns:jpa="http://www.springframework.org/schema/data/jpa"
+	   xmlns:security="http://www.springframework.org/schema/security"
+	   xmlns:mvc="http://www.springframework.org/schema/mvc" xmlns:util="http://www.springframework.org/schema/util"
+	   xmlns:task="http://www.springframework.org/schema/task" xmlns:jee="http://www.springframework.org/schema/jee"
+	   xsi:schemaLocation="http://www.springframework.org/schema/aop
+		http://www.springframework.org/schema/aop/spring-aop-4.0.xsd
+		http://www.springframework.org/schema/security
+		http://www.springframework.org/schema/security/spring-security-3.2.xsd
+		http://www.springframework.org/schema/beans
+		http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+		http://www.springframework.org/schema/data/jpa
+		http://www.springframework.org/schema/data/jpa/spring-jpa-1.3.xsd
+		http://www.springframework.org/schema/tx
+		http://www.springframework.org/schema/tx/spring-tx-4.0.xsd
+		http://www.springframework.org/schema/context
+		http://www.springframework.org/schema/context/spring-context-4.0.xsd
+		http://www.springframework.org/schema/mvc
+    	http://www.springframework.org/schema/mvc/spring-mvc-4.0.xsd
+    	http://www.springframework.org/schema/util
+    	http://www.springframework.org/schema/util/spring-util-4.0.xsd
+    	http://www.springframework.org/schema/task
+    	http://www.springframework.org/schema/task/spring-task-4.0.xsd http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee.xsd">
+
+	<bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource"
+		destroy-method="close">
+		<property name="driverClass">
+			<value>${datasource.driverClassName}</value>
+		</property>
+		<property name="jdbcUrl">
+			<value>${datasource.url}</value>
+		</property>
+		<property name="user">
+			<value>${datasource.username}</value>
+		</property>
+		<property name="password">
+			<value>${datasource.password}</value>
+		</property>
+		<property name="acquireIncrement">
+			<value>${c3p0.acquireIncrement}</value>
+		</property>
+		<property name="initialPoolSize">
+			<value>${c3p0.initialPoolSize}</value>
+		</property>
+		<property name="minPoolSize">
+			<value>${c3p0.minPoolSize}</value>
+		</property>
+		<property name="maxPoolSize">
+			<value>${c3p0.maxPoolSize}</value>
+		</property>
+		<property name="maxIdleTime">
+			<value>${c3p0.maxIdleTime}</value>
+		</property>
+		<property name="idleConnectionTestPeriod">
+			<value>${c3p0.idleConnectionTestPeriod}</value>
+		</property>
+		<property name="preferredTestQuery">
+			<value>${c3p0.preferredTestQuery}</value>
+		</property>
+	</bean>
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+		<property name="configLocation" value="classpath:mybatis/mybatis-config.xml" />
+		<property name="typeAliasesPackage" value="com.springapp.model" />
+		<property name="mapperLocations">
+			<list>
+				<value>classpath:com/springapp/model/mapper/*.xml</value>
+			</list>
+		</property>
+	</bean>
+	<bean id="sqlSessionTemplate" class="org.mybatis.spring.SqlSessionTemplate"
+		scope="prototype">
+		<constructor-arg index="0" ref="sqlSessionFactory" />
+	</bean>
+	<bean id="transactionManager"
+		class="org.springframework.jdbc.datasource.DataSourceTransactionManager"
+		p:dataSource-ref="dataSource" />
+	<context:component-scan base-package="com.springapp.persist.dao" />
+	<context:annotation-config />
+
+	<!--&lt;!&ndash; 根据不同的环境获得不同的数据库配置 start&ndash;&gt;-->
+	<!-- 开发环境 -->
+	<beans profile="dev">
+		<bean id="propertyConfigurer-dev"
+			  class="com.springapp.persist.psd.PropertyPlaceholderConfigurerAdapter">
+			<property name="locations">
+				<list>
+					<value>classpath:mybatis/jdbc.properties</value>
+				</list>
+			</property>
+			<property name="key" value="mysql_key" />
+			<property name="proName" value="datasource.password" />
+		</bean>
+	</beans>
+
+	<!-- 内测环境-->
+	<beans profile="internal">
+		<bean id="propertyConfigurer-internal"
+			  class="com.springapp.persist.psd.PropertyPlaceholderConfigurerAdapter">
+			<property name="locations">
+				<list>
+					<value>file:/mnt/tomcat-springapp/conf/jdbc.properties</value>
+				</list>
+			</property>
+			<property name="key" value="mysql_key" />
+			<property name="proName" value="datasource.password" />
+		</bean>
+	</beans>
+
+	<!-- 封测环境-->
+	<beans profile="external">
+		<bean id="propertyConfigurer-external"
+			  class="com.springapp.persist.psd.PropertyPlaceholderConfigurerAdapter">
+			<property name="locations">
+				<list>
+					<value>file:/mnt/data/tomcat-springapp/conf/jdbc.properties</value>
+				</list>
+			</property>
+			<property name="key" value="mysql_key" />
+			<property name="proName" value="datasource.password" />
+		</bean>
+	</beans>
+
+	<!-- 正式环境-->
+	<beans profile="production">
+		<bean id="propertyConfigurer-production"
+			  class="com.springapp.persist.psd.PropertyPlaceholderConfigurerAdapter">
+			<property name="locations">
+				<list>
+					<value>file:/mnt/data/resources/conf/jdbc.properties</value>
+				</list>
+			</property>
+			<property name="key" value="mysql_key"/>
+			<property name="proName" value="datasource.password"/>
+		</bean>
+	</beans>
+
+	<!--<jee:jndi-lookup id="dataSource" jndi-name="jdbc/mysql"/>-->
+
+</beans>
