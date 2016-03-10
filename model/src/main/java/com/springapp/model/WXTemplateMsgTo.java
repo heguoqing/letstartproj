@@ -1,6 +1,10 @@
 package com.springapp.model;
 
-public class WXTemplateMsgTo {
+public class WXTemplateMsgTo implements  BaseEntity{
+    public String getNameSpace() {
+        return "com.ww.springapp.persist.dao.WXTemplateMsgToMapper";
+    }
+
     private Integer id;
 
     private String openId;
