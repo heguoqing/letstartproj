@@ -13,7 +13,7 @@ import java.io.Serializable;
 public class UserDAOImpl implements UserDAO {
 
     @Autowired
-    protected RedisTemplate<Serializable, Serializable> redisTemplate;
+    protected RedisTemplate redisTemplate;
 
     public void saveUser(final User user) {
 //        redisTemplate.execute(new RedisCallback<Object>() {
